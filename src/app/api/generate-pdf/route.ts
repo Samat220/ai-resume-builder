@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
-import { ResumeData, JobAnalysisResponse } from '@/lib/types';
+import { ResumeData, JobAnalysisResponse, EnhancedJobAnalysisResponse, DynamicResumeRequest } from '@/lib/types';
+import { DynamicResumeBuilder } from '@/lib/dynamicResumeBuilder';
 import { BulletPointOptimizer } from '@/lib/bulletPointOptimizer';
 import { initialBulletPointPool } from '@/lib/initialData';
 
@@ -24,7 +25,12 @@ function rateLimit(ip: string, maxRequests = 5, windowMs = 60000): boolean {
   return true;
 }
 
-function validateInput(data: unknown): data is { resumeData: ResumeData; analysis?: JobAnalysisResponse; isOptimized?: boolean } {
+function validateInput(data: unknown): data is {
+  resumeData: ResumeData;
+  analysis?: JobAnalysisResponse;
+  enhancedAnalysis?: EnhancedJobAnalysisResponse;
+  isOptimized?: boolean
+} {
   if (!data || typeof data !== 'object') return false;
 
   const obj = data as Record<string, unknown>;
@@ -58,13 +64,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { resumeData, analysis, isOptimized } = body;
+    const { resumeData, analysis, enhancedAnalysis, isOptimized } = body;
 
-    // Optimize bullet points for single-page constraint
-    const optimizedResumeData = BulletPointOptimizer.optimizeBulletsForSinglePage(
-      resumeData,
-      initialBulletPointPool
-    );
+    let optimizedResumeData: ResumeData;
+
+    // Use new dynamic system if enhanced analysis is available
+    if (enhancedAnalysis && isOptimized) {
+      console.log('Using dynamic resume builder with AI rankings');
+      const dynamicRequest: DynamicResumeRequest = {
+        originalResume: resumeData,
+        rankedContent: enhancedAnalysis,
+        bulletPool: initialBulletPointPool,
+        maxJobs: 2,
+        minBulletsPerJob: 3
+      };
+
+      const optimizedContent = DynamicResumeBuilder.buildOptimizedResume(dynamicRequest);
+      optimizedResumeData = optimizedContent.resumeData;
+
+      console.log(`Dynamic optimization: ${optimizedContent.optimizationDetails.totalBulletsAdded} bullets, ${optimizedContent.pageSpaceUsed.usedLines}/${optimizedContent.pageSpaceUsed.totalAvailableLines} lines used`);
+    } else {
+      // Fallback to old system for backward compatibility
+      console.log('Using legacy bullet point optimizer');
+      optimizedResumeData = BulletPointOptimizer.optimizeBulletsForSinglePage(
+        resumeData,
+        initialBulletPointPool
+      );
+    }
 
     // Generate HTML for the resume
     const html = generateResumeHTML(optimizedResumeData, analysis, isOptimized);
@@ -98,9 +124,9 @@ export async function POST(request: NextRequest) {
       printBackground: true,
       margin: {
         top: '0.3in',
-        right: '0.4in',
+        right: '0.5in',
         bottom: '0.3in',
-        left: '0.4in',
+        left: '0.5in',
       },
       displayHeaderFooter: false,
     });
@@ -162,10 +188,10 @@ function generateResumeHTML(resumeData: ResumeData, analysis?: JobAnalysisRespon
 
     body {
       font-family: 'Arial', 'Helvetica', sans-serif;
-      line-height: 1.4;
+      line-height: 1.3;
       color: #000000;
       background: white;
-      font-size: 11pt;
+      font-size: 10.5pt;
     }
 
     .resume-container {
@@ -178,25 +204,25 @@ function generateResumeHTML(resumeData: ResumeData, analysis?: JobAnalysisRespon
 
     .header {
       text-align: center;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       padding-bottom: 0px;
     }
 
     .name {
-      font-size: 22pt;
+      font-size: 20pt;
       font-weight: bold;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       color: #000000;
     }
 
     .title {
-      font-size: 12pt;
+      font-size: 11pt;
       color: #333333;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .contact-info {
-      font-size: 10pt;
+      font-size: 9.5pt;
       color: #333333;
     }
 
@@ -206,22 +232,22 @@ function generateResumeHTML(resumeData: ResumeData, analysis?: JobAnalysisRespon
     }
 
     .section {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .section-title {
-      font-size: 12pt;
+      font-size: 11pt;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
-      border-bottom: 2px solid #000000;
-      padding-bottom: 2px;
+      border-bottom: 1.5px solid #000000;
+      padding-bottom: 1px;
       margin-bottom: 8px;
       text-align: center;
     }
 
     .experience-item, .project-item, .education-item {
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .item-header {
@@ -232,46 +258,46 @@ function generateResumeHTML(resumeData: ResumeData, analysis?: JobAnalysisRespon
     }
 
     .organization, .project-name, .degree {
-      font-size: 11pt;
+      font-size: 10.5pt;
       font-weight: bold;
     }
 
     .dates {
-      font-size: 10pt;
+      font-size: 9.5pt;
       color: #333333;
     }
 
     .position, .institution {
-      font-size: 11pt;
+      font-size: 10.5pt;
       font-style: italic;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       color: #333333;
     }
 
     .technologies {
-      font-size: 10pt;
+      font-size: 9.5pt;
       color: #666666;
       font-style: italic;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .bullet-list {
       list-style: disc;
-      margin-left: 18px;
+      margin-left: 16px;
     }
 
     .bullet-list li {
-      font-size: 10pt;
-      margin-bottom: 2px;
-      line-height: 1.3;
+      font-size: 9.5pt;
+      margin-bottom: 1px;
+      line-height: 1.25;
     }
 
     .skills-grid {
-      font-size: 10pt;
+      font-size: 9.5pt;
     }
 
     .skills-category {
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .skills-category strong {

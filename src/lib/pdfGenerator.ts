@@ -1,8 +1,9 @@
-import { ResumeData, JobAnalysisResponse } from './types';
+import { ResumeData, JobAnalysisResponse, EnhancedJobAnalysisResponse } from './types';
 
 export interface PDFGenerationRequest {
   resumeData: ResumeData;
   analysis?: JobAnalysisResponse;
+  enhancedAnalysis?: EnhancedJobAnalysisResponse;
   isOptimized?: boolean;
 }
 

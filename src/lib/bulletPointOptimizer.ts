@@ -15,9 +15,9 @@ export class BulletPointOptimizer {
     resumeData: ResumeData,
     bulletPool: BulletPointPool[]
   ): ResumeData {
-    // Conservative single-page limits based on content density
-    const MAX_TOTAL_BULLETS = 11; // Experience + Projects + Education combined
-    const MIN_BULLETS_PER_JOB = 3;
+    // Optimized single-page limits to maximize content density
+    const MAX_TOTAL_BULLETS = 18; // Experience + Projects + Education combined
+    const MIN_BULLETS_PER_JOB = 4;
 
     // Calculate allocation strategy
     const allocation = this.calculateOptimalAllocation(
@@ -32,10 +32,10 @@ export class BulletPointOptimizer {
       return this.selectBestBullets(exp, bulletPool, targetCount);
     });
 
-    // Keep projects conservative (3 bullets max)
+    // Allow more bullets for projects (4 bullets max)
     const optimizedProjects = resumeData.projects.map(project => ({
       ...project,
-      bullets: project.bullets.slice(0, 3)
+      bullets: project.bullets.slice(0, 4)
     }));
 
     return {
@@ -76,7 +76,7 @@ export class BulletPointOptimizer {
           const maxAdditional = Math.min(
             remainingExtra,
             job.availableBullets - job.bulletCount,
-            2 // Cap additional bullets per job at 2 to maintain balance
+            3 // Cap additional bullets per job at 3 for better density
           );
           job.bulletCount += maxAdditional;
           remainingExtra -= maxAdditional;
@@ -130,7 +130,7 @@ export class BulletPointOptimizer {
                         resumeData.projects.reduce((sum, proj) => sum + proj.bullets.length, 0) +
                         (resumeData.education[0]?.bullets?.length || 0);
 
-    // Conservative estimate: 11 bullets max for single page
-    return totalBullets <= 11;
+    // Optimized estimate: 18 bullets max for single page with compact layout
+    return totalBullets <= 18;
   }
 }

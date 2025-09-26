@@ -1,28 +1,8 @@
-# AI-Powered Resume Builder
+# CLAUDE.md
 
-A modern, secure resume builder that uses AI to intelligently match your experience with job requirements.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🚀 Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your Gemini API key
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
-
-## 🔧 Development Commands
+## Development Commands
 
 ```bash
 # Development
@@ -30,183 +10,93 @@ npm run dev          # Start development server with Turbopack
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
-npm run lint:fix     # Fix ESLint issues
+npm run typecheck    # Type check without building (tsc --noEmit)
 
-# Type checking
-npx tsc --noEmit     # Type check without building
+# Environment setup
+cp .env.example .env.local
+# Edit .env.local with your Gemini API key
 ```
 
-## 🏗️ Project Structure
+## Architecture Overview
 
+### AI-Powered Resume Optimization Flow
+The core architecture centers around AI-driven resume optimization:
+
+1. **Client Input**: Users provide job descriptions and their resume data
+2. **Server-Side AI Analysis**: `/api/analyze-job` processes job descriptions using Gemini AI
+3. **Bullet Point Selection**: AI selects optimal bullet points from user's experience pool
+4. **Resume Generation**: Optimized resume created based on AI recommendations
+
+### Key Architectural Patterns
+
+**Server-Side AI Security Pattern**:
+- All Gemini AI calls happen server-side in `/api/analyze-job/route.ts`
+- Client-side code in `/lib/api.ts` handles API communication only
+- Rate limiting (10 requests/minute per IP) implemented in API routes
+- Input validation and sanitization on all AI endpoints
+
+**Data Flow Architecture**:
 ```
-src/
-├── app/                    # Next.js App Router
-│   ├── api/               # API routes (server-side only)
-│   │   └── analyze-job/   # Gemini AI integration
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── components/            # React components
-│   ├── forms/            # Form components
-│   ├── resume/           # Resume-related components
-│   └── ui/               # Reusable UI components
-├── lib/                  # Utility functions and configurations
-│   ├── api.ts           # Client-side API utilities
-│   ├── types.ts         # TypeScript interfaces
-│   └── utils.ts         # Helper functions
-└── styles/              # Additional stylesheets
-```
-
-## 🔐 Security Guidelines
-
-### API Key Management
-- **NEVER** commit `.env.local` to git
-- **ALWAYS** use server-side API routes for Gemini AI calls
-- **NEVER** expose API keys in client-side code
-- Use environment variables for all sensitive configuration
-
-### API Security
-- All AI processing happens server-side via `/api/analyze-job`
-- Rate limiting implemented (10 requests/minute per IP)
-- Input validation and sanitization on all endpoints
-- Security headers configured in `next.config.ts`
-- Error handling that doesn't leak sensitive information
-
-### Best Practices
-- Validate all user inputs client and server-side
-- Sanitize data before processing with AI
-- Use TypeScript for type safety
-- Keep dependencies updated
-- Follow principle of least privilege
-
-## 🤖 AI Integration
-
-### Gemini AI Setup
-1. Get API key from [Google AI Studio](https://aistudio.google.com/)
-2. Add to `.env.local`:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
-3. Never expose this key to client-side code
-
-### API Usage
-```typescript
-import { analyzeJob } from '@/lib/api';
-
-const analysis = await analyzeJob({
-  jobDescription: "Software Engineer job posting...",
-  userSkills: ["JavaScript", "React", "Node.js"],
-  availableBullets: bulletPointPool
-});
+User Input → JobAnalyzer → /api/analyze-job → Gemini AI → JobAnalysisResponse → ResumeBuilder
 ```
 
-## 📝 Data Models
+**Type System Design**:
+- `BulletPointPool`: Core data structure with category-based bullet points
+- `JobAnalysis`: AI-generated analysis of job requirements
+- `OptimizedResume`: Final output linking original data to AI optimizations
+- All types defined in `/src/lib/types.ts`
 
-### Core Types
-- `UserProfile` - User's complete profile data
-- `ResumeData` - Resume structure with personal info, experience, skills
-- `BulletPointPool` - Pool of available bullet points with categories
-- `JobAnalysis` - AI analysis results from job descriptions
-- `OptimizedResume` - AI-optimized resume for specific job
+### Core Components
 
-### Bullet Point Categories
-- `technical` - Technical achievements and implementations
-- `leadership` - Leadership and management experiences
-- `achievement` - Quantifiable accomplishments
-- `project` - Project-specific contributions
-- `soft-skill` - Communication, collaboration, etc.
+**Main Application Flow**:
+- `ResumeBuilder.tsx`: Main orchestrator component
+- `ProfileEditor.tsx`: User data input
+- `JobAnalyzer.tsx`: Job description analysis interface
+- `BulletPointManager.tsx`: Bullet point pool management
+- `ResumePreview.tsx`: Final resume display
 
-## 🎨 Styling
+**AI Integration Layer**:
+- `/api/analyze-job/route.ts`: Gemini AI integration with security
+- `/lib/api.ts`: Client-side API utilities with error handling
+- `/lib/bulletPointOptimizer.ts`: Bullet point selection logic
 
-- **Tailwind CSS** for utility-first styling
-- **Component-based** approach with reusable UI elements
-- **Responsive design** with mobile-first approach
-- **Print-optimized** styles for PDF generation
-- **ATS-friendly** formatting options
+**Data Processing**:
+- `/lib/resumeConstructor.ts`: Resume assembly logic
+- `/lib/pdfGenerator.ts`: PDF generation using Puppeteer
+- `/lib/initialData.ts`: Default data structures
 
-## 🧪 Testing
+### Security Requirements
 
-```bash
-# Run tests (when implemented)
-npm test
+**API Key Management**:
+- NEVER expose `GEMINI_API_KEY` in client-side code
+- All AI processing must happen in server-side API routes
+- Environment variables required: `GEMINI_API_KEY`
 
-# Run tests in watch mode
-npm run test:watch
+**Input Validation**:
+- Job descriptions limited to 50,000 characters
+- All user inputs sanitized before AI processing
+- Rate limiting enforced on all AI endpoints
 
-# Run test coverage
-npm run test:coverage
-```
+### Development Notes
 
-## 📦 Dependencies
+**TypeScript Configuration**:
+- Strict mode enabled with path aliases (`@/*` → `./src/*`)
+- All components must be typed using interfaces from `/lib/types.ts`
 
-### Core
-- **Next.js 15** - React framework with App Router
-- **React 18** - UI library
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
+**Styling**:
+- Tailwind CSS for all styling
+- Component-based approach with reusable patterns
+- Print-optimized CSS for PDF generation
 
-### AI & APIs
-- **@google/generative-ai** - Gemini AI SDK
+**Next.js 15 App Router**:
+- Uses App Router with TypeScript
+- API routes in `/app/api/` directory
+- Turbopack enabled for faster development builds
 
-### Development
-- **ESLint** - Code linting
-- **PostCSS** - CSS processing
+### Testing and Quality
 
-## 🚀 Deployment
+**Linting**: ESLint with Next.js and TypeScript rules
+**Type Checking**: Run `npm run typecheck` before major changes
+**Security Headers**: Configured in `next.config.ts` for API protection
 
-### Environment Variables Required
-```bash
-GEMINI_API_KEY=your_gemini_api_key
-NEXTAUTH_URL=https://yourdomain.com
-NEXTAUTH_SECRET=your_secret_key
-```
-
-### Vercel Deployment
-1. Connect repository to Vercel
-2. Add environment variables in Vercel dashboard
-3. Deploy automatically on push to main branch
-
-### Self-hosted Deployment
-```bash
-npm run build
-npm start
-# Or use PM2, Docker, etc.
-```
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-**API Key Not Working:**
-- Verify key is set in `.env.local`
-- Check Gemini AI quotas and billing
-- Ensure API is enabled in Google Cloud Console
-
-**Build Errors:**
-- Run `npm run lint` to check for code issues
-- Verify all dependencies are installed
-- Check TypeScript errors with `npx tsc --noEmit`
-
-**Rate Limiting:**
-- Wait 1 minute between requests if hitting limits
-- Consider implementing user authentication for higher limits
-
-## 📈 Performance
-
-- **Turbopack** enabled for faster development builds
-- **Static generation** where possible
-- **API response caching** (planned)
-- **Image optimization** with Next.js Image component
-- **Bundle analysis** available with `@next/bundle-analyzer`
-
-## 🤝 Contributing
-
-1. Follow existing code style and patterns
-2. Add TypeScript types for new features
-3. Test AI integrations thoroughly
-4. Update documentation for new features
-5. Ensure security best practices are followed
-
-## 📄 License
-
-This project is for educational and personal use.
+When working on this codebase, always maintain the server-side AI security pattern and ensure all new features follow the established type system in `/lib/types.ts`.

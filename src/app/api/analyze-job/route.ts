@@ -1,9 +1,19 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { NextRequest, NextResponse } from 'next/server';
-import { JobAnalysisRequest, JobAnalysisResponse, JobAnalysis, BulletPointPool } from '@/lib/types';
+import {
+  JobAnalysisRequest,
+  JobAnalysisResponse,
+  EnhancedJobAnalysisResponse,
+  JobAnalysis,
+  BulletPointPool,
+  RankedBullet,
+  RankedSkillCategories
+} from '@/lib/types';
 
 // Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const genAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
 // Rate limiting store (in production, use Redis or database)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -90,9 +100,6 @@ export async function POST(request: NextRequest) {
     // Sanitize inputs
     const sanitizedDescription = sanitizeInput(jobDescription);
 
-    // Initialize Gemini model
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
     // Create analysis prompt
     const analysisPrompt = `
 Analyze this job description and provide structured analysis:
@@ -104,7 +111,7 @@ Available User Skills: ${userSkills.join(', ')}
 
 Available Bullet Points:
 ${availableBullets.map((bullet, idx) =>
-  `${idx + 1}. [${bullet.category}] ${bullet.content} (Skills: ${bullet.skills.join(', ')})`
+  `ID: ${bullet.id} | [${bullet.category}] ${bullet.content} (Skills: ${bullet.skills.join(', ')})`
 ).join('\n')}
 
 Please provide analysis in the following JSON format:
@@ -118,8 +125,16 @@ Please provide analysis in the following JSON format:
   "industry": "industry name",
   "technicalFocus": ["area1", "area2"],
   "leadershipLevel": "individual|team-lead|manager|director",
-  "selectedBulletIds": ["bullet_id1", "bullet_id2"],
-  "relevantSkills": ["skill1", "skill2"],
+  "rankedBullets": [
+    {"bulletId": "bullet1", "relevanceScore": 95, "reasoning": "directly matches required skill"},
+    {"bulletId": "bullet2", "relevanceScore": 87, "reasoning": "shows relevant experience"}
+  ],
+  "rankedSkills": {
+    "programmingLanguages": [{"skill": "Python", "relevanceScore": 100}, {"skill": "JavaScript", "relevanceScore": 85}],
+    "frameworks": [{"skill": "React", "relevanceScore": 95}],
+    "tools": [{"skill": "Docker", "relevanceScore": 80}],
+    "others": [{"skill": "Git", "relevanceScore": 70}]
+  },
   "matchScore": 85,
   "recommendations": ["recommendation1", "recommendation2"],
   "optimizationSuggestions": ["suggestion1", "suggestion2"]
@@ -128,15 +143,18 @@ Please provide analysis in the following JSON format:
 Focus on:
 1. Extract key technical skills and requirements
 2. Identify seniority level and leadership expectations
-3. Select the 5 most relevant bullet points from the available list
-4. Calculate match score (0-100) based on skill alignment
-5. Provide actionable recommendations for optimization
+3. RANK ALL provided bullet points by relevance (0-100 score) - do not limit selection
+4. RANK ALL user skills by relevance to job requirements (0-100 score)
+5. Calculate overall match score (0-100) based on skill alignment
+6. Provide actionable recommendations for optimization
 `;
 
-    // Get AI analysis
-    const result = await model.generateContent(analysisPrompt);
-    const response = await result.response;
-    const text = response.text();
+    // Get AI analysis using new SDK
+    const result = await genAI.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: analysisPrompt,
+    });
+    const text = result.text;
 
     // Parse JSON response from AI
     let analysisData;
@@ -171,44 +189,63 @@ Focus on:
       leadershipLevel: analysisData.leadershipLevel || 'individual'
     };
 
-    // Select bullet points based on AI recommendations
-    const selectedBullets: BulletPointPool[] = [];
-    if (analysisData.selectedBulletIds && Array.isArray(analysisData.selectedBulletIds)) {
-      for (const bulletId of analysisData.selectedBulletIds.slice(0, 5)) {
-        const bullet = availableBullets.find(b => b.id === bulletId);
-        if (bullet) {
-          selectedBullets.push({
-            ...bullet,
-            relevanceScore: analysisData.matchScore || 0
-          });
-        }
-      }
+    // Process ranked bullets from AI
+    const rankedBullets: RankedBullet[] = [];
+    if (analysisData.rankedBullets && Array.isArray(analysisData.rankedBullets)) {
+      rankedBullets.push(...analysisData.rankedBullets);
+    } else {
+      // Fallback: create rankings for all bullets
+      availableBullets.forEach((bullet, index) => {
+        rankedBullets.push({
+          bulletId: bullet.id,
+          relevanceScore: 50, // Default score
+          reasoning: 'Default ranking applied'
+        });
+      });
     }
 
-    // If AI didn't select enough bullets, use fallback logic
-    if (selectedBullets.length < 3) {
-      const fallbackBullets = availableBullets
-        .filter(bullet =>
-          bullet.skills.some(skill =>
-            analysisData.requiredSkills.includes(skill) ||
-            analysisData.preferredSkills.includes(skill)
-          )
-        )
-        .slice(0, 5 - selectedBullets.length);
+    // Process ranked skills from AI
+    const rankedSkills: RankedSkillCategories = analysisData.rankedSkills || {
+      programmingLanguages: [],
+      frameworks: [],
+      tools: [],
+      others: []
+    };
 
-      selectedBullets.push(...fallbackBullets);
-    }
-
-    const analysisResponse: JobAnalysisResponse = {
+    // Create enhanced response with rankings
+    const enhancedResponse: EnhancedJobAnalysisResponse = {
       analysis: jobAnalysis,
-      selectedBullets,
-      relevantSkills: analysisData.relevantSkills || userSkills.slice(0, 10),
+      rankedBullets,
+      rankedSkills,
       matchScore: Math.min(Math.max(analysisData.matchScore || 50, 0), 100),
       recommendations: analysisData.recommendations || [],
       optimizationSuggestions: analysisData.optimizationSuggestions || []
     };
 
-    return NextResponse.json(analysisResponse);
+    // Also create legacy response for backward compatibility
+    const selectedBullets: BulletPointPool[] = rankedBullets
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
+      .slice(0, 5)
+      .map(rb => {
+        const bullet = availableBullets.find(b => b.id === rb.bulletId);
+        return bullet ? { ...bullet, relevanceScore: rb.relevanceScore } : null;
+      })
+      .filter(Boolean) as BulletPointPool[];
+
+    const legacyResponse: JobAnalysisResponse = {
+      analysis: jobAnalysis,
+      selectedBullets,
+      relevantSkills: userSkills.slice(0, 10),
+      matchScore: enhancedResponse.matchScore,
+      recommendations: enhancedResponse.recommendations,
+      optimizationSuggestions: enhancedResponse.optimizationSuggestions
+    };
+
+    // Return enhanced response with rankings (keeping legacy for now)
+    return NextResponse.json({
+      ...legacyResponse,
+      enhanced: enhancedResponse
+    });
 
   } catch (error) {
     console.error('API Error:', error);

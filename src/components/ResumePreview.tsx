@@ -22,10 +22,14 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
     setPdfState({ isGenerating: true, error: null });
 
     try {
+      // Extract enhanced analysis if available
+      const enhancedAnalysis = (analysis as any)?.enhanced || null;
+
       await PDFGenerator.downloadPDF({
         resumeData: originalResumeData || resumeData,
         analysis: analysis || undefined,
-        isOptimized: false,
+        enhancedAnalysis: enhancedAnalysis,
+        isOptimized: isOptimized || false,
       });
       setPdfState({ isGenerating: false, error: null });
     } catch (error) {

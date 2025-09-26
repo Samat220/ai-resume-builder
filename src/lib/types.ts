@@ -85,6 +85,35 @@ export interface JobAnalysisRequest {
   availableBullets: BulletPointPool[];
 }
 
+// Enhanced ranking interfaces for new AI system
+export interface RankedBullet {
+  bulletId: string;
+  relevanceScore: number;
+  reasoning: string;
+}
+
+export interface RankedSkill {
+  skill: string;
+  relevanceScore: number;
+}
+
+export interface RankedSkillCategories {
+  programmingLanguages: RankedSkill[];
+  frameworks: RankedSkill[];
+  tools: RankedSkill[];
+  others: RankedSkill[];
+}
+
+export interface EnhancedJobAnalysisResponse {
+  analysis: JobAnalysis;
+  rankedBullets: RankedBullet[];
+  rankedSkills: RankedSkillCategories;
+  matchScore: number;
+  recommendations: string[];
+  optimizationSuggestions: string[];
+}
+
+// Legacy interface for backward compatibility
 export interface JobAnalysisResponse {
   analysis: JobAnalysis;
   selectedBullets: BulletPointPool[];
@@ -142,4 +171,33 @@ export interface FormattingOptions {
   margin: 'tight' | 'standard' | 'loose';
   lineSpacing: 'compact' | 'standard' | 'relaxed';
   maxBulletPoints: number;
+}
+
+// Dynamic resume building interfaces
+export interface PageSpaceEstimate {
+  totalAvailableLines: number;
+  usedLines: number;
+  remainingLines: number;
+  canFitMoreContent: boolean;
+}
+
+export interface DynamicResumeRequest {
+  originalResume: ResumeData;
+  rankedContent: EnhancedJobAnalysisResponse;
+  bulletPool: BulletPointPool[];
+  maxJobs?: number; // Default 2
+  minBulletsPerJob?: number; // Default 3
+}
+
+export interface OptimizedResumeContent {
+  resumeData: ResumeData;
+  usedBullets: string[];
+  selectedProjectId?: number;
+  pageSpaceUsed: PageSpaceEstimate;
+  optimizationDetails: {
+    totalBulletsAdded: number;
+    skillsReordered: boolean;
+    projectSelected: boolean;
+    jobsPrioritized: boolean;
+  };
 }
