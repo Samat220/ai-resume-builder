@@ -2,12 +2,11 @@
 
 export interface BulletPointPool {
   id: string;
-  category: 'technical' | 'leadership' | 'achievement' | 'project' | 'soft-skill';
   content: string;
   skills: string[];
   impact?: string;
   relevanceScore?: number;
-  experienceId?: string; // Links to specific experience/project
+  experienceId: string; // Links to specific experience/project - now required
 }
 
 export interface Experience {

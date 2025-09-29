@@ -23,12 +23,12 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
 
     try {
       // Extract enhanced analysis if available
-      const enhancedAnalysis = (analysis as any)?.enhanced || null;
+      const enhancedAnalysis = (analysis as { enhanced?: unknown })?.enhanced || null;
 
       await PDFGenerator.downloadPDF({
         resumeData: originalResumeData || resumeData,
         analysis: analysis || undefined,
-        enhancedAnalysis: enhancedAnalysis,
+        enhancedAnalysis: enhancedAnalysis as any,
         isOptimized: isOptimized || false,
       });
       setPdfState({ isGenerating: false, error: null });
@@ -80,12 +80,12 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {personalInfo.name || 'Your Name'}
           </h1>
-          <p className="text-xl text-gray-600 mb-4">
+          <p className="text-xl text-gray-900 mb-4">
             {personalInfo.title || 'Professional Title'}
           </p>
 
           {/* Contact Information */}
-          <div className="flex justify-center items-center space-x-4 text-sm text-gray-600 flex-wrap">
+          <div className="flex justify-center items-center space-x-4 text-sm text-gray-900 flex-wrap">
             {personalInfo.email && (
               <>
                 <a href={`mailto:${personalInfo.email}`} className="hover:text-blue-600">
@@ -153,14 +153,14 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
                     <h3 className="text-lg font-semibold text-gray-900">
                       {exp.organization || 'Company Name'}
                     </h3>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-900">
                       {exp.dates || 'Employment Dates'}
                     </span>
                   </div>
-                  <p className="text-md italic text-gray-700 mb-3">
+                  <p className="text-md italic text-gray-900 mb-3">
                     {exp.position || 'Position Title'}
                   </p>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-800">
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-900">
                     {getDisplayedBullets(exp.bullets).map((bullet, bulletIndex) => (
                       <li key={bulletIndex} className="leading-relaxed">
                         {bullet}
@@ -184,11 +184,11 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
                     {project.name || 'Project Name'}
                   </h3>
                   {project.technologies && (
-                    <p className="text-sm italic text-gray-600 mb-2">
+                    <p className="text-sm italic text-gray-900 mb-2">
                       Technologies: {project.technologies}
                     </p>
                   )}
-                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-800">
+                  <ul className="list-disc list-inside space-y-1 text-sm text-gray-900">
                     {getDisplayedBullets(project.bullets).map((bullet, index) => (
                       <li key={index} className="leading-relaxed">
                         {bullet}
@@ -205,30 +205,30 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
             <h2 className="text-xl font-bold text-gray-900 border-b-2 border-black pb-1 mb-4 uppercase tracking-wider">
               Skills
             </h2>
-            <div className="text-sm space-y-1">
+            <div className="text-sm space-y-1 text-gray-900">
               <div className="space-y-1">
                 {skills.programmingLanguages.length > 0 && (
-                  <p>
+                  <p className="text-gray-900">
                     <strong>● Programming Languages:</strong> {skills.programmingLanguages.join(', ')}
                   </p>
                 )}
                 {skills.machineLearning.length > 0 && (
-                  <p>
+                  <p className="text-gray-900">
                     <strong>● Machine Learning & Data:</strong> {skills.machineLearning.join(', ')}
                   </p>
                 )}
                 {skills.softwareAndTools.length > 0 && (
-                  <p>
+                  <p className="text-gray-900">
                     <strong>● Software & Tools:</strong> {skills.softwareAndTools.join(', ')}
                   </p>
                 )}
                 {skills.cloudAndDevOps.length > 0 && (
-                  <p>
+                  <p className="text-gray-900">
                     <strong>● Cloud & DevOps:</strong> {skills.cloudAndDevOps.join(', ')}
                   </p>
                 )}
                 {skills.frameworksAndLibraries.length > 0 && (
-                  <p>
+                  <p className="text-gray-900">
                     <strong>● Frameworks & Libraries:</strong> {skills.frameworksAndLibraries.join(', ')}
                   </p>
                 )}
@@ -248,15 +248,15 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
                     <h3 className="text-lg font-semibold text-gray-900">
                       {edu.degree || 'Degree'}
                     </h3>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-900">
                       {edu.graduationDate || 'Graduation Date'}
                     </span>
                   </div>
-                  <p className="text-md italic text-gray-700">
+                  <p className="text-md italic text-gray-900">
                     {edu.institution || 'Institution Name'}
                   </p>
                   {edu.courses && edu.courses.length > 0 && (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-900 mt-1">
                       <strong>Relevant Coursework: </strong>
                       {edu.courses.join(' • ')}
                     </p>
@@ -333,7 +333,7 @@ export default function ResumePreview({ resumeData, originalResumeData, analysis
 
         {/* Download Info */}
         <div className="text-center">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-900">
             Professional PDF generation creates an ATS-friendly resume optimized for job applications
             {isOptimized && (
               <span className="block mt-1 text-green-600 font-medium">

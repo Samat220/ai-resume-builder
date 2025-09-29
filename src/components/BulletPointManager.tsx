@@ -1,45 +1,47 @@
 "use client";
 
 import { useState } from 'react';
-import { BulletPointPool } from '@/lib/types';
+import { BulletPointPool, Experience, Project } from '@/lib/types';
 import { generateId } from '@/lib/utils';
 
 interface BulletPointManagerProps {
   bulletPool: BulletPointPool[];
   setBulletPool: (bullets: BulletPointPool[]) => void;
+  experiences: Experience[];
+  projects: Project[];
 }
 
 export default function BulletPointManager({
   bulletPool,
   setBulletPool,
+  experiences,
+  projects,
 }: BulletPointManagerProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedExperience, setSelectedExperience] = useState<string>('all');
   const [newBullet, setNewBullet] = useState({
-    category: 'technical' as BulletPointPool['category'],
+    experienceId: experiences[0]?.id.toString() || '1',
     content: '',
     skills: '',
     impact: '',
   });
 
-  const categories = [
-    { id: 'all', label: 'All Categories' },
-    { id: 'technical', label: 'Technical' },
-    { id: 'leadership', label: 'Leadership' },
-    { id: 'achievement', label: 'Achievement' },
-    { id: 'project', label: 'Project' },
-    { id: 'soft-skill', label: 'Soft Skills' },
+  // Get all unique experiences/jobs from experiences and projects
+  const allJobs = [
+    { id: 'all', label: 'All Jobs' },
+    ...experiences.map(exp => ({ id: exp.id.toString(), label: `${exp.position} at ${exp.organization}` })),
+    ...projects.map(proj => ({ id: proj.id.toString(), label: `Project: ${proj.name}` }))
   ];
 
-  const filteredBullets = selectedCategory === 'all'
+  const filteredBullets = selectedExperience === 'all'
     ? bulletPool
-    : bulletPool.filter(bullet => bullet.category === selectedCategory);
+    : bulletPool.filter(bullet => bullet.experienceId === selectedExperience);
 
   const addBullet = () => {
     if (!newBullet.content.trim()) return;
 
     const bullet: BulletPointPool = {
       id: generateId(),
-      category: newBullet.category,
+      experienceId: newBullet.experienceId,
       content: newBullet.content.trim(),
       skills: newBullet.skills.split(',').map(s => s.trim()).filter(s => s),
       impact: newBullet.impact.trim() || undefined,
@@ -47,7 +49,7 @@ export default function BulletPointManager({
 
     setBulletPool([...bulletPool, bullet]);
     setNewBullet({
-      category: 'technical' as BulletPointPool['category'],
+      experienceId: experiences[0]?.id.toString() || '1',
       content: '',
       skills: '',
       impact: '',
@@ -59,56 +61,73 @@ export default function BulletPointManager({
     setBulletPool(bulletPool.filter(bullet => bullet.id !== id));
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      technical: 'bg-blue-100 text-blue-800',
-      leadership: 'bg-purple-100 text-purple-800',
-      achievement: 'bg-green-100 text-green-800',
-      project: 'bg-orange-100 text-orange-800',
-      'soft-skill': 'bg-pink-100 text-pink-800',
+  const getJobInfo = (experienceId: string) => {
+    const experience = experiences.find(exp => exp.id.toString() === experienceId);
+    if (experience) {
+      return {
+        label: `${experience.position} at ${experience.organization}`,
+        color: 'bg-blue-100 text-blue-800'
+      };
+    }
+
+    const project = projects.find(proj => proj.id.toString() === experienceId);
+    if (project) {
+      return {
+        label: `Project: ${project.name}`,
+        color: 'bg-green-100 text-green-800'
+      };
+    }
+
+    return {
+      label: 'Unknown Job',
+      color: 'bg-gray-100 text-gray-900'
     };
-    return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Content Pool Manager</h2>
-        <div className="text-sm text-gray-600">
+        <h2 className="text-2xl font-semibold text-gray-900">Content Pool Manager</h2>
+        <div className="text-sm text-gray-900">
           {filteredBullets.length} bullet points
         </div>
       </div>
 
       {/* Add New Bullet Point */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h3 className="text-lg font-semibold mb-4">Add New Bullet Point</h3>
+        <h3 className="text-lg font-semibold mb-4 text-gray-900">Add New Bullet Point</h3>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
+            <label className="block text-sm font-medium text-gray-900 mb-1">
+              Job/Experience
             </label>
             <select
-              value={newBullet.category}
-              onChange={(e) => setNewBullet({ ...newBullet, category: e.target.value as BulletPointPool['category'] })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              value={newBullet.experienceId}
+              onChange={(e) => setNewBullet({ ...newBullet, experienceId: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900"
             >
-              <option value="technical">Technical</option>
-              <option value="leadership">Leadership</option>
-              <option value="achievement">Achievement</option>
-              <option value="project">Project</option>
-              <option value="soft-skill">Soft Skills</option>
+              {experiences.map(exp => (
+                <option key={exp.id} value={exp.id.toString()}>
+                  {exp.position} at {exp.organization}
+                </option>
+              ))}
+              {projects.map(proj => (
+                <option key={proj.id} value={proj.id.toString()}>
+                  Project: {proj.name}
+                </option>
+              ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               Content *
             </label>
             <textarea
               value={newBullet.content}
               onChange={(e) => setNewBullet({ ...newBullet, content: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 resize-vertical"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 resize-vertical text-gray-900 placeholder-gray-500"
               rows={3}
               placeholder="Describe your achievement, responsibility, or contribution with specific metrics when possible..."
             />
@@ -116,28 +135,28 @@ export default function BulletPointManager({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Relevant Skills
               </label>
               <input
                 type="text"
                 value={newBullet.skills}
                 onChange={(e) => setNewBullet({ ...newBullet, skills: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                 placeholder="Python, React, API Design"
               />
-              <p className="text-xs text-gray-500 mt-1">Separate skills with commas</p>
+              <p className="text-xs text-gray-900 mt-1">Separate skills with commas</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-900 mb-1">
                 Impact/Result
               </label>
               <input
                 type="text"
                 value={newBullet.impact}
                 onChange={(e) => setNewBullet({ ...newBullet, impact: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                 placeholder="30% performance improvement"
               />
             </div>
@@ -156,26 +175,26 @@ export default function BulletPointManager({
       {/* Filter Tabs */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
-            {categories.map((category) => (
+          <nav className="-mb-px flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
+            {allJobs.map((job) => (
               <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
+                key={job.id}
+                onClick={() => setSelectedExperience(job.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
-                  selectedCategory === category.id
+                  selectedExperience === job.id
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-900 hover:text-gray-900 hover:border-gray-300'
                 }`}
               >
-                {category.label}
-                {category.id === 'all' && (
+                {job.label}
+                {job.id === 'all' && (
                   <span className="ml-2 bg-gray-100 text-gray-900 text-xs rounded-full px-2 py-1">
                     {bulletPool.length}
                   </span>
                 )}
-                {category.id !== 'all' && (
+                {job.id !== 'all' && (
                   <span className="ml-2 bg-gray-100 text-gray-900 text-xs rounded-full px-2 py-1">
-                    {bulletPool.filter(b => b.category === category.id).length}
+                    {bulletPool.filter(b => b.experienceId === job.id).length}
                   </span>
                 )}
               </button>
@@ -186,17 +205,17 @@ export default function BulletPointManager({
         {/* Bullet Points List */}
         <div className="p-6 space-y-4">
           {filteredBullets.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              {selectedCategory === 'all'
+            <div className="text-center py-8 text-gray-900">
+              {selectedExperience === 'all'
                 ? 'No bullet points added yet. Add your first one above!'
-                : `No ${selectedCategory} bullet points found.`}
+                : `No bullet points found for this job.`}
             </div>
           ) : (
             filteredBullets.map((bullet) => (
               <div key={bullet.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-3">
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(bullet.category)}`}>
-                    {bullet.category}
+                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getJobInfo(bullet.experienceId).color}`}>
+                    {getJobInfo(bullet.experienceId).label}
                   </span>
                   <button
                     onClick={() => removeBullet(bullet.id)}
@@ -213,11 +232,11 @@ export default function BulletPointManager({
                 <div className="space-y-2">
                   {bullet.skills.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-xs text-gray-600 mr-2">Skills:</span>
+                      <span className="text-xs text-gray-900 mr-2">Skills:</span>
                       {bullet.skills.map((skill, index) => (
                         <span
                           key={index}
-                          className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
+                          className="inline-block bg-gray-100 text-gray-900 text-xs px-2 py-1 rounded"
                         >
                           {skill}
                         </span>
@@ -227,7 +246,7 @@ export default function BulletPointManager({
 
                   {bullet.impact && (
                     <div className="text-sm">
-                      <span className="text-gray-600">Impact: </span>
+                      <span className="text-gray-900">Impact: </span>
                       <span className="text-green-600 font-medium">{bullet.impact}</span>
                     </div>
                   )}

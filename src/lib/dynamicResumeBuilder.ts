@@ -9,7 +9,8 @@ import {
   OptimizedResumeContent,
   PageSpaceEstimate,
   RankedBullet,
-  RankedSkill
+  RankedSkill,
+  RankedSkillCategories
 } from './types';
 
 export class DynamicResumeBuilder {
@@ -31,7 +32,7 @@ export class DynamicResumeBuilder {
     const minBulletsPerJob = request.minBulletsPerJob || 3;
 
     // Step 1: Initialize with static content
-    let optimizedResume: ResumeData = {
+    const optimizedResume: ResumeData = {
       personalInfo: originalResume.personalInfo,
       education: originalResume.education,
       experience: [],
@@ -40,7 +41,7 @@ export class DynamicResumeBuilder {
     };
 
     let usedLines = this.STATIC_CONTENT_LINES + this.SKILLS_SECTION_LINES;
-    let usedBullets: string[] = [];
+    const usedBullets: string[] = [];
 
     // Step 2: Add most relevant project
     const selectedProject = this.selectBestProject(originalResume.projects, rankedContent);
@@ -216,32 +217,32 @@ export class DynamicResumeBuilder {
    */
   private static buildRankedSkills(
     originalSkills: Skills,
-    rankedSkills: any
+    rankedSkills: RankedSkillCategories | null
   ): Skills {
     // Map AI ranked skills back to original categories
     const programmingLanguages = this.reorderSkillsByRanking(
       originalSkills.programmingLanguages,
-      rankedSkills.programmingLanguages || []
+      rankedSkills?.programmingLanguages || []
     );
 
     const frameworksAndLibraries = this.reorderSkillsByRanking(
       originalSkills.frameworksAndLibraries,
-      rankedSkills.frameworks || []
+      rankedSkills?.frameworks || []
     );
 
     const softwareAndTools = this.reorderSkillsByRanking(
       originalSkills.softwareAndTools,
-      rankedSkills.tools || []
+      rankedSkills?.tools || []
     );
 
     const cloudAndDevOps = this.reorderSkillsByRanking(
       originalSkills.cloudAndDevOps,
-      rankedSkills.others || []
+      rankedSkills?.others || []
     );
 
     const machineLearning = this.reorderSkillsByRanking(
       originalSkills.machineLearning,
-      rankedSkills.others || []
+      rankedSkills?.others || []
     );
 
     return {

@@ -80,7 +80,9 @@ export class ResumeConstructor {
       let optimizedBullets: string[];
 
       if (relevantBullets.length > 0) {
-        optimizedBullets = relevantBullets.slice(0, 10).map(bullet => bullet.content);
+        // Use AI-selected bullets and remove duplicates
+        const bulletContents = relevantBullets.map(bullet => bullet.content);
+        optimizedBullets = this.removeDuplicateBullets(bulletContents).slice(0, 10);
       } else {
         // Score and select best existing bullets based on job requirements
         const scoredBullets = exp.bullets.map(bullet => ({
@@ -88,7 +90,9 @@ export class ResumeConstructor {
           score: this.scoreBulletForJob(bullet, analysis),
         })).sort((a, b) => b.score - a.score);
 
-        optimizedBullets = scoredBullets.slice(0, 10).map(item => item.content);
+        optimizedBullets = this.removeDuplicateBullets(
+          scoredBullets.map(item => item.content)
+        ).slice(0, 10);
       }
 
       return {
@@ -109,8 +113,7 @@ export class ResumeConstructor {
     return originalProjects.map(project => {
       // Find project-specific bullets
       const relevantBullets = analysis.selectedBullets.filter(bullet =>
-        bullet.experienceId === `project-${project.id}` ||
-        bullet.category === 'project'
+        bullet.experienceId === project.id.toString()
       );
 
       let optimizedBullets: string[];

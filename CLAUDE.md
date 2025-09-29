@@ -14,7 +14,8 @@ npm run typecheck    # Type check without building (tsc --noEmit)
 
 # Environment setup
 cp .env.example .env.local
-# Edit .env.local with your Gemini API key
+# Required: GEMINI_API_KEY from Google AI Studio
+# Optional: NEXTAUTH_URL, NEXTAUTH_SECRET for future auth features
 ```
 
 ## Architecture Overview
@@ -57,11 +58,13 @@ User Input → JobAnalyzer → /api/analyze-job → Gemini AI → JobAnalysisRes
 
 **AI Integration Layer**:
 - `/api/analyze-job/route.ts`: Gemini AI integration with security
+- `/api/generate-pdf/route.ts`: Server-side PDF generation endpoint
 - `/lib/api.ts`: Client-side API utilities with error handling
 - `/lib/bulletPointOptimizer.ts`: Bullet point selection logic
 
 **Data Processing**:
 - `/lib/resumeConstructor.ts`: Resume assembly logic
+- `/lib/dynamicResumeBuilder.ts`: Smart resume building with space optimization
 - `/lib/pdfGenerator.ts`: PDF generation using Puppeteer
 - `/lib/initialData.ts`: Default data structures
 
@@ -75,7 +78,8 @@ User Input → JobAnalyzer → /api/analyze-job → Gemini AI → JobAnalysisRes
 **Input Validation**:
 - Job descriptions limited to 50,000 characters
 - All user inputs sanitized before AI processing
-- Rate limiting enforced on all AI endpoints
+- Rate limiting: 10 requests/minute per IP on `/api/analyze-job`
+- In-memory rate limiting store (consider Redis for production)
 
 ### Development Notes
 
@@ -93,10 +97,35 @@ User Input → JobAnalyzer → /api/analyze-job → Gemini AI → JobAnalysisRes
 - API routes in `/app/api/` directory
 - Turbopack enabled for faster development builds
 
+### API Endpoints
+
+**POST `/api/analyze-job`**:
+- Analyzes job descriptions using Gemini AI
+- Returns ranked bullet points and skills
+- Rate limited: 10 requests/minute per IP
+- Requires: `jobDescription`, `userSkills`, `availableBullets`
+
+**POST `/api/generate-pdf`**:
+- Server-side PDF generation using Puppeteer
+- Takes resume data and returns PDF buffer
+- No rate limiting (but should be added for production)
+
 ### Testing and Quality
 
 **Linting**: ESLint with Next.js and TypeScript rules
 **Type Checking**: Run `npm run typecheck` before major changes
 **Security Headers**: Configured in `next.config.ts` for API protection
+
+### Key Implementation Patterns
+
+**Dynamic Resume Building**:
+- Use `/lib/dynamicResumeBuilder.ts` for space-optimized resume generation
+- Prioritizes most relevant content based on AI analysis
+- Handles page space estimation and content fitting
+
+**Type Safety**:
+- All AI responses use `EnhancedJobAnalysisResponse` interface
+- Legacy `JobAnalysisResponse` maintained for backward compatibility
+- Extensive type definitions in `/lib/types.ts` cover all data structures
 
 When working on this codebase, always maintain the server-side AI security pattern and ensure all new features follow the established type system in `/lib/types.ts`.

@@ -81,10 +81,8 @@ export const initialResumeData: ResumeData = {
 
 // Extended bullet point pool for AI selection
 export const initialBulletPointPool: BulletPointPool[] = [
-  // Technical Achievements
   {
     id: generateId(),
-    category: 'technical',
     content: "Integrated a custom rate limiter at the SDK level for Oracle, reducing API request bursts and preventing over-limit errors by 30%, enhancing system reliability and performance through a token bucket algorithm.",
     skills: ["Python", "Oracle", "SDK", "API", "Performance Optimization", "System Design"],
     impact: "30% reduction in API errors",
@@ -92,7 +90,6 @@ export const initialBulletPointPool: BulletPointPool[] = [
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Retired fragile legacy name references across a Django app by rolling out multi-phase schema updates, rewriting service logic, and updating the React front end to utilize ID-based fields, strengthening data integrity.",
     skills: ["Django", "React", "Database Migration", "Schema Design", "Full Stack"],
     impact: "Improved data integrity",
@@ -100,7 +97,6 @@ export const initialBulletPointPool: BulletPointPool[] = [
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Engineered a robust Postgresql database system to effectively store credentials and addresses of over 10 million users, enhancing the system's data management capabilities.",
     skills: ["PostgreSQL", "Database Design", "Scalability", "Data Management", "Backend"],
     impact: "10M+ user data management",
@@ -108,25 +104,20 @@ export const initialBulletPointPool: BulletPointPool[] = [
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Built a RESTful API with FastAPI to handle CRUD operations, tag filtering, and randomized selection logic.",
     skills: ["FastAPI", "REST API", "Python", "Backend Development", "API Design"],
     impact: "Complete API implementation",
-    experienceId: "media-picker"
+    experienceId: "1"
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Designed and implemented a full-stack media management app allowing users to add, edit, and organize video games, movies, and TV series into categorized lists with filtering, tagging, and archiving features.",
     skills: ["Full Stack", "Python", "JavaScript", "Web Development", "UI/UX"],
     impact: "Complete application development",
-    experienceId: "media-picker"
+    experienceId: "1"
   },
-
-  // Leadership & Collaboration
   {
     id: generateId(),
-    category: 'leadership',
     content: "Led design reviews with peers and stakeholders to decide amongst available technologies to implement RESTful API help section category feature.",
     skills: ["Leadership", "Design Reviews", "Stakeholder Management", "Technical Decision Making"],
     impact: "Improved technical decision process",
@@ -134,17 +125,13 @@ export const initialBulletPointPool: BulletPointPool[] = [
   },
   {
     id: generateId(),
-    category: 'leadership',
     content: "Collaborated with cross-functional teams to deliver high-quality software solutions in an agile environment using Docker, Jira, and Postman for streamlined development workflows.",
     skills: ["Team Collaboration", "Agile", "Docker", "Jira", "Cross-functional"],
     impact: "Streamlined development process",
     experienceId: "2"
   },
-
-  // Process Improvement
   {
     id: generateId(),
-    category: 'achievement',
     content: "Leveraged AI coding tools (Claude Code, Copilot) to automate test-driven development workflows, accelerating feature delivery and reducing manual test overhead.",
     skills: ["AI Tools", "Test-Driven Development", "Automation", "DevOps"],
     impact: "Accelerated development workflows",
@@ -152,17 +139,13 @@ export const initialBulletPointPool: BulletPointPool[] = [
   },
   {
     id: generateId(),
-    category: 'achievement',
     content: "Integrated a spinning wheel animation (JavaScript/Canvas) to visually randomize game/movie selection, improving user engagement and application interactivity.",
     skills: ["JavaScript", "Canvas API", "Frontend", "User Experience", "Animation"],
     impact: "Enhanced user engagement",
-    experienceId: "media-picker"
+    experienceId: "1"
   },
-
-  // Additional Movableink Bullets
   {
     id: generateId(),
-    category: 'technical',
     content: "Optimized PostgreSQL database queries and implemented Redis caching strategies, resulting in 40% improvement in API response times and reduced server load.",
     skills: ["PostgreSQL", "Redis", "Database Optimization", "Caching", "Performance"],
     impact: "40% performance improvement",
@@ -170,17 +153,13 @@ export const initialBulletPointPool: BulletPointPool[] = [
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Built comprehensive monitoring and alerting systems using Datadog and PagerDuty, providing real-time insights into application performance and system health.",
     skills: ["Monitoring", "Datadog", "PagerDuty", "System Health", "Alerting"],
     impact: "Real-time system monitoring",
     experienceId: "1"
   },
-
-  // Additional Lucky Financial Bullets
   {
     id: generateId(),
-    category: 'technical',
     content: "Implemented comprehensive error handling and logging systems across multiple microservices to improve debugging and system monitoring capabilities.",
     skills: ["Error Handling", "Logging", "Microservices", "System Monitoring", "Debugging"],
     impact: "Improved system reliability",
@@ -188,39 +167,37 @@ export const initialBulletPointPool: BulletPointPool[] = [
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Optimized database queries and implemented caching strategies, resulting in 40% improvement in application response times.",
     skills: ["Database Optimization", "Caching", "Performance Tuning", "SQL", "Backend"],
-    impact: "40% performance improvement"
+    impact: "40% performance improvement",
+    experienceId: "2"
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Developed and maintained CI/CD pipelines using GitHub Actions and AWS services, automating deployment processes and reducing manual intervention by 80%.",
     skills: ["CI/CD", "GitHub Actions", "AWS", "DevOps", "Automation"],
-    impact: "80% reduction in manual deployment"
+    impact: "80% reduction in manual deployment",
+    experienceId: "1"
   },
   {
     id: generateId(),
-    category: 'technical',
     content: "Built responsive web applications using React and TypeScript with comprehensive test coverage using Jest and React Testing Library.",
     skills: ["React", "TypeScript", "Testing", "Jest", "Frontend Development"],
-    impact: "Full test coverage implementation"
+    impact: "Full test coverage implementation",
+    experienceId: "2"
   },
-
-  // Soft Skills & Communication
   {
     id: generateId(),
-    category: 'soft-skill',
     content: "Mentored junior developers on best practices for code quality, testing, and professional development, contributing to team skill advancement.",
     skills: ["Mentoring", "Code Quality", "Team Development", "Knowledge Sharing"],
-    impact: "Team skill development"
+    impact: "Team skill development",
+    experienceId: "1"
   },
   {
     id: generateId(),
-    category: 'soft-skill',
     content: "Presented technical solutions to non-technical stakeholders, translating complex requirements into actionable development plans.",
     skills: ["Communication", "Stakeholder Management", "Technical Writing", "Requirements Analysis"],
-    impact: "Improved stakeholder communication"
+    impact: "Improved stakeholder communication",
+    experienceId: "2"
   }
 ];

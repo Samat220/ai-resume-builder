@@ -110,8 +110,8 @@ ${sanitizedDescription}
 Available User Skills: ${userSkills.join(', ')}
 
 Available Bullet Points:
-${availableBullets.map((bullet, idx) =>
-  `ID: ${bullet.id} | [${bullet.category}] ${bullet.content} (Skills: ${bullet.skills.join(', ')})`
+${availableBullets.map((bullet) =>
+  `ID: ${bullet.id} | ${bullet.content} (Skills: ${bullet.skills.join(', ')})`
 ).join('\n')}
 
 Please provide analysis in the following JSON format:
@@ -155,6 +155,10 @@ Focus on:
       contents: analysisPrompt,
     });
     const text = result.text;
+
+    if (!text) {
+      throw new Error('No response text from AI');
+    }
 
     // Parse JSON response from AI
     let analysisData;

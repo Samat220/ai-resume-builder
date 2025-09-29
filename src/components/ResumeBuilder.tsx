@@ -75,7 +75,7 @@ export default function ResumeBuilder({
               <h1 className="text-3xl font-bold text-gray-900">
                 AI Resume Builder
               </h1>
-              <p className="mt-1 text-sm text-gray-600">
+              <p className="mt-1 text-sm text-gray-900">
                 Intelligently match your experience with job requirements
               </p>
             </div>
@@ -96,7 +96,7 @@ export default function ResumeBuilder({
                   </div>
                   <button
                     onClick={revertToOriginal}
-                    className="text-sm bg-gray-100 text-gray-800 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors"
+                    className="text-sm bg-gray-100 text-gray-900 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors"
                   >
                     ↶ Revert to Original
                   </button>
@@ -124,7 +124,7 @@ export default function ResumeBuilder({
                 className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-gray-900 hover:text-gray-900 hover:border-gray-300'
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -159,6 +159,8 @@ export default function ResumeBuilder({
           <BulletPointManager
             bulletPool={bulletPool}
             setBulletPool={setBulletPool}
+            experiences={resumeData.experience}
+            projects={resumeData.projects}
           />
         )}
 
@@ -167,25 +169,25 @@ export default function ResumeBuilder({
             {/* Resume Comparison */}
             {isUsingOptimizedResume && optimizedResume && (
               <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h2 className="text-xl font-semibold mb-4">AI Optimization Results</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-900">AI Optimization Results</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <div className="text-2xl font-bold text-green-600">
                       {optimizedResume.relevanceScore}%
                     </div>
-                    <div className="text-sm text-gray-600">Job Match Score</div>
+                    <div className="text-sm text-gray-900">Job Match Score</div>
                   </div>
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
                       {optimizedResume.selectedBullets.length}
                     </div>
-                    <div className="text-sm text-gray-600">AI-Selected Bullets</div>
+                    <div className="text-sm text-gray-900">AI-Selected Bullets</div>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
                     <div className="text-2xl font-bold text-purple-600">
                       {optimizedResume.optimizations.skillsHighlighted.length}
                     </div>
-                    <div className="text-sm text-gray-600">Skills Highlighted</div>
+                    <div className="text-sm text-gray-900">Skills Highlighted</div>
                   </div>
                 </div>
               </div>
@@ -194,7 +196,7 @@ export default function ResumeBuilder({
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
               <div className="xl:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">
+                  <h2 className="text-xl font-semibold text-gray-900">
                     {isUsingOptimizedResume ? 'AI-Optimized Resume' : 'Resume Preview'}
                   </h2>
                   {isUsingOptimizedResume && (
@@ -212,7 +214,7 @@ export default function ResumeBuilder({
               </div>
 
               <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold mb-4">Optimization Tips</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Optimization Tips</h2>
               {currentAnalysis ? (
                 <div className="space-y-4">
                   <div>
@@ -223,7 +225,7 @@ export default function ResumeBuilder({
                         style={{ width: `${currentAnalysis.matchScore}%` }}
                       ></div>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-900 mt-1">
                       {currentAnalysis.matchScore}% match with job requirements
                     </p>
                   </div>
@@ -233,7 +235,7 @@ export default function ResumeBuilder({
                       <h3 className="font-medium text-gray-900 mb-2">Recommendations</h3>
                       <ul className="space-y-1">
                         {currentAnalysis.recommendations.map((rec, index) => (
-                          <li key={index} className="text-sm text-gray-600 flex items-start">
+                          <li key={index} className="text-sm text-gray-900 flex items-start">
                             <span className="text-green-500 mr-2">•</span>
                             {rec}
                           </li>
@@ -247,7 +249,7 @@ export default function ResumeBuilder({
                       <h3 className="font-medium text-gray-900 mb-2">Optimization Tips</h3>
                       <ul className="space-y-1">
                         {currentAnalysis.optimizationSuggestions.map((tip, index) => (
-                          <li key={index} className="text-sm text-gray-600 flex items-start">
+                          <li key={index} className="text-sm text-gray-900 flex items-start">
                             <span className="text-blue-500 mr-2">💡</span>
                             {tip}
                           </li>
@@ -258,7 +260,7 @@ export default function ResumeBuilder({
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
+                  <p className="text-gray-900 mb-4">
                     Analyze a job description to see optimization tips
                   </p>
                   <button
